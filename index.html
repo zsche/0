@@ -3,73 +3,56 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Rubik's Cube Sandbox — PLUS (legality checker)</title>
-<!-- All CSS and JS are self-contained -->
+<title>Rubik's Cube Sandbox — Touch-Friendly + Diagnostics</title>
 <style>
-  :root { --u:#ffffff; --d:#ffd400; --f:#00b050; --b:#1f57ff; --r:#e12222; --l:#ff7a00;
-    --gap:6px; --tile:44px; }
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
-       margin:16px; line-height:1.3; background:#0b0c10; color:#e8eaed;}
+  :root { --u:#ffffff; --d:#ffd400; --f:#00b050; --b:#1f57ff; --r:#e12222; --l:#ff7a00; --gap:6px; --tile:44px; }
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; margin:16px; line-height:1.3; background:#0b0c10; color:#e8eaed;}
   h1{font-size:20px; margin:0 0 12px 0;}
   .row{display:flex; gap:16px; flex-wrap:wrap;}
-  .card{background:#111418; border:1px solid #22262c; border-radius:12px; padding:12px;
-        box-shadow:0 1px 0 #1a1d22 inset, 0 6px 24px rgba(0,0,0,.3);}
+  .card{background:#111418; border:1px solid #22262c; border-radius:12px; padding:12px; box-shadow:0 1px 0 #1a1d22 inset, 0 6px 24px rgba(0,0,0,.3);}
   .card h2{font-size:14px; margin:0 0 10px 0; color:#cdd3da; letter-spacing:.3px; text-transform:uppercase}
   .controls{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px;}
-  button, .chip{background:#1b1f27; color:#e8eaed; border:1px solid #2a3038; border-radius:10px; padding:8px 10px; cursor:pointer; font-weight:600}
-  button:hover,.chip:hover{background:#222832}
+  button, .chip{background:#1b1f27; color:#e8eaed; border:1px solid #2a3038; border-radius:10px; padding:10px 12px; cursor:pointer; font-weight:600}
   button:active{transform:translateY(1px)}
   .chip{display:inline-flex; align-items:center; gap:8px}
-  .swatch{width:18px; height:18px; border-radius:4px; border:1px solid rgba(0,0,0,.4);
-          box-shadow:inset 0 1px 0 rgba(255,255,255,.15);}
+  .swatch{width:18px; height:18px; border-radius:4px; border:1px solid rgba(0,0,0,.4); box-shadow:inset 0 1px 0 rgba(255,255,255,.15);}
   .palette{display:flex; gap:8px; flex-wrap:wrap}
-  .grid{display:grid; grid-template-columns:repeat(3, var(--tile));
-        grid-template-rows:repeat(3, var(--tile)); gap:var(--gap); background:#0e1116;
-        padding:var(--gap); border-radius:12px; border:1px solid #1e232a}
-  .tile{width:var(--tile); height:var(--tile); border-radius:8px;
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.15), inset 0 -2px 0 rgba(0,0,0,.3);
-        cursor:pointer; transition:transform .02s, box-shadow .15s}
-  .tile.center{outline:2px dashed rgba(255,255,255,.25); outline-offset:-4px; cursor:not-allowed}
+  .grid{display:grid; grid-template-columns:repeat(3, var(--tile)); grid-template-rows:repeat(3, var(--tile)); gap:var(--gap); background:#0e1116; padding:var(--gap); border-radius:12px; border:1px solid #1e232a}
+  .tile{width:var(--tile); height:var(--tile); border-radius:8px; box-shadow:inset 0 1px 0 rgba(255,255,255,.15), inset 0 -2px 0 rgba(0,0,0,.3); user-select:none; -webkit-user-select:none; touch-action:manipulation}
+  .tile.center{outline:2px dashed rgba(255,255,255,.25); outline-offset:-4px}
   .tile.bad{box-shadow:0 0 0 2px #ff6363, inset 0 1px 0 rgba(255,255,255,.15), inset 0 -2px 0 rgba(0,0,0,.3)}
-  .net{display:grid; grid-template-columns:repeat(4, auto); grid-auto-rows:auto;
-       align-items:center; gap:14px 18px}
+  .net{display:grid; grid-template-columns:repeat(4, auto); grid-auto-rows:auto; align-items:center; gap:14px 18px}
   .face{display:flex; flex-direction:column; align-items:flex-start}
   .face .name{font-weight:700; letter-spacing:.4px; font-size:13px; color:#cfd6de; margin-bottom:6px}
-  .preview-wrap{width:360px; height:360px; perspective:900px; background:linear-gradient(180deg,#0c0f14,#0b0c10);
-                border-radius:12px; border:1px solid #1e232a; display:flex; align-items:center; justify-content:center}
-  .cube{position:relative; width:220px; height:220px; transform-style:preserve-3d; cursor:grab}
+  .preview-wrap{width:360px; height:360px; perspective:900px; background:#0c0f14; border-radius:12px; border:1px solid #1e232a; display:flex; align-items:center; justify-content:center}
+  .cube{position:relative; width:220px; height:220px; transform-style:preserve-3d; cursor:grab; touch-action:none}
   .cube:active{cursor:grabbing}
-  .cube-face{position:absolute; width:200px; height:200px; transform-style:preserve-3d;
-             display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
-             gap:6px; padding:6px; background:#0f1217; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .cube-face{position:absolute; width:200px; height:200px; transform-style:preserve-3d; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:6px; padding:6px; background:#0f1217; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.35)}
   .cube-sticker{border-radius:6px; box-shadow:inset 0 1px 0 rgba(255,255,255,.2), inset 0 -2px 0 rgba(0,0,0,.35)}
   .F{transform:translateZ(110px)} .B{transform:rotateY(180deg) translateZ(110px)}
   .U{transform:rotateX(90deg) translateZ(110px)} .D{transform:rotateX(-90deg) translateZ(110px)}
   .R{transform:rotateY(90deg) translateZ(110px)} .L{transform:rotateY(-90deg) translateZ(110px)}
-  .status{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-          font-size:12px; background:#0d1015; border:1px solid #20252d; border-radius:8px;
-          padding:8px; color:#c8d1db; white-space:pre-wrap}
-  textarea{width:100%; min-height:96px; background:#0d1015; color:#e8eaed;
-           border:1px solid #20252d; border-radius:8px; padding:8px}
-  .small{font-size:12px; color:#9aa4b2}
-  .warn{color:#ffb347} .ok{color:#76e39f} .bad{color:#ff6363}
+  .status{font-family:ui-monospace, Menlo, Consolas, monospace; font-size:12px; background:#0d1015; border:1px solid #20252d; border-radius:8px; padding:8px; color:#c8d1db; white-space:pre-wrap}
+  textarea{width:100%; min-height:120px; background:#0d1015; color:#e8eaed; border:1px solid #20252d; border-radius:8px; padding:8px}
+  .ok{color:#76e39f} .warn{color:#ffb347} .bad{color:#ff6363}
+  .diag{font-size:12px; color:#9aa4b2; margin-top:6px}
 </style>
 </head>
 <body>
-  <h1>Rubik’s Cube Sandbox — PLUS</h1>
-  <p>Self-contained version for GitHub Pages. Just upload as <code>index.html</code> to a repo and enable Pages.</p>
+  <h1>Rubik’s Cube Sandbox — Touch-Friendly + Diagnostics</h1>
   <div class="row">
     <div class="card">
       <h2>3D Preview</h2>
       <div class="preview-wrap">
         <div class="cube" id="cube"></div>
       </div>
-      <div class="small" style="margin-top:6px">Drag to rotate. Preview mirrors the net editor.</div>
+      <div class="diag" id="diag1">JS loaded…</div>
     </div>
     <div class="card" style="flex:1; min-width:380px;">
       <h2>Editor</h2>
       <div class="controls">
         <div class="palette" id="palette"></div>
+        <button id="selfTest">Self‑test</button>
       </div>
       <div class="net" id="net"></div>
       <div style="height:8px"></div>
@@ -84,12 +67,212 @@
         <button id="exportBtn">Export JSON</button>
         <button id="importBtn">Import JSON</button>
       </div>
-      <textarea id="io" placeholder="Use Export/Import to save or load a configuration."></textarea>
+      <textarea id="io" placeholder="Export fills this box. Copy/paste here to import."></textarea>
       <div class="status" id="status"></div>
+      <div class="diag" id="diag2"></div>
     </div>
   </div>
 <script>
-// (JavaScript content omitted here for brevity in this code block. In practice, it includes the full checker logic.)
+// Utilities
+const log = (...a)=>{ try{ console.log(...a);}catch(e){} };
+const stamp = ()=> new Date().toISOString().split("T")[1].split(".")[0];
+
+// Model
+const DEFAULT_COLORS={U:"#ffffff",D:"#ffd400",F:"#00b050",B:"#1f57ff",R:"#e12222",L:"#ff7a00"};
+function solvedState(){ const s={}; for(const f of ["U","D","F","B","R","L"]) s[f]=Array(9).fill(f); return s; }
+let state = solvedState();
+let centersLocked = true;
+
+// Palette
+const paletteEl=document.getElementById("palette");
+let currentPaint="F";
+function makeChip(face){ const d=document.createElement("div"); d.className="chip";
+  const sw=document.createElement("div"); sw.className="swatch"; sw.style.background=DEFAULT_COLORS[face];
+  const lbl=document.createElement("span"); lbl.textContent=face; d.appendChild(sw); d.appendChild(lbl);
+  d.addEventListener("click",()=>{ currentPaint=face; highlightPalette(); });
+  return d; }
+function highlightPalette(){ [...paletteEl.children].forEach(c=> c.style.outline=(c.querySelector("span").textContent===currentPaint)?"2px solid #7ae0b8":"none"); }
+["U","D","F","B","R","L"].forEach(f=>paletteEl.appendChild(makeChip(f))); highlightPalette();
+
+// Net
+const netEl=document.getElementById("net");
+const faceLayout=[["","U",""],["L","F","R","B"],["","D",""]];
+function buildFace(faceKey){
+  const wrap=document.createElement("div"); wrap.className="face";
+  const name=document.createElement("div"); name.className="name"; name.textContent=faceKey;
+  const grid=document.createElement("div"); grid.className="grid"; grid.dataset.face=faceKey;
+  for(let i=0;i<9;i++){ const t=document.createElement("div"); t.className="tile"; if(i===4) t.classList.add("center"); t.dataset.index=i; grid.appendChild(t); }
+  wrap.appendChild(name); wrap.appendChild(grid); return wrap;
+}
+function renderNet(){
+  netEl.innerHTML="";
+  for(const row of faceLayout){
+    for(const cell of row){
+      if(cell===""){ const s=document.createElement("div"); s.style.width="calc(3*var(--tile) + 4*var(--gap))"; s.style.height="calc(3*var(--tile) + 4*var(--gap))"; netEl.appendChild(s); }
+      else{ netEl.appendChild(buildFace(cell)); }
+    }
+  }
+  paintTiles(); attachTileHandlers(); renderPreview(); updateStatus("render");
+}
+function paintTiles(){
+  for(const f of ["U","D","F","B","R","L"]){
+    const grid=document.querySelector(`.grid[data-face='${f}']`);
+    const arr=state[f];
+    for(let i=0;i<9;i++){ const tile=grid.children[i]; tile.classList.remove("bad"); tile.style.background=DEFAULT_COLORS[arr[i]]; }
+  }
+}
+function attachTileHandlers(){
+  const applyPaint=(tile)=>{
+    const idx=+tile.dataset.index; const face=tile.parentElement.dataset.face;
+    if(idx===4 && centersLocked) return;
+    state[face][idx]=currentPaint; tile.style.background=DEFAULT_COLORS[currentPaint];
+    renderPreview(); updateStatus("paint");
+  };
+  document.querySelectorAll(".tile").forEach(tile=>{
+    tile.addEventListener("click", ()=>applyPaint(tile));
+    tile.addEventListener("touchstart",(e)=>{ e.preventDefault(); applyPaint(tile); }, {passive:false});
+  });
+}
+renderNet();
+
+// 3D preview
+const cubeEl=document.getElementById("cube");
+function buildCube(){
+  cubeEl.innerHTML="";
+  ["F","B","U","D","R","L"].forEach(fk=>{
+    const face=document.createElement("div"); face.className="cube-face "+fk;
+    for(let i=0;i<9;i++){ const st=document.createElement("div"); st.className="cube-sticker"; face.appendChild(st); }
+    cubeEl.appendChild(face);
+  });
+}
+buildCube();
+function renderPreview(){
+  const map={F:"F",B:"B",U:"U",D:"D",R:"R",L:"L"};
+  for(const fk in map){
+    const faceEl=cubeEl.querySelector("."+fk);
+    const arr=state[map[fk]]; const kids=[...faceEl.children];
+    for(let i=0;i<9;i++){ kids[i].style.background=DEFAULT_COLORS[arr[i]]; }
+  }
+}
+// touch+mouse rotation
+let rotX=-22, rotY=-28, dragging=false, lx=0, ly=0;
+function applyRotation(){ cubeEl.style.transform=`rotateX(${rotX}deg) rotateY(${rotY}deg)`; }
+applyRotation();
+cubeEl.addEventListener("mousedown",(e)=>{ dragging=true; lx=e.clientX; ly=e.clientY; });
+window.addEventListener("mouseup",()=>dragging=false);
+window.addEventListener("mousemove",(e)=>{ if(!dragging) return; const dx=e.clientX-lx, dy=e.clientY-ly; rotY+=dx*0.4; rotX-=dy*0.4; lx=e.clientX; ly=e.clientY; applyRotation(); });
+cubeEl.addEventListener("touchstart",(e)=>{ if(e.touches.length!==1) return; dragging=true; lx=e.touches[0].clientX; ly=e.touches[0].clientY; }, {passive:true});
+cubeEl.addEventListener("touchend",()=>{ dragging=false; }, {passive:true});
+cubeEl.addEventListener("touchmove",(e)=>{ if(!dragging||e.touches.length!==1) return; const t=e.touches[0]; const dx=t.clientX-lx, dy=t.clientY-ly; rotY+=dx*0.4; rotX-=dy*0.4; lx=t.clientX; ly=t.clientY; applyRotation(); }, {passive:true});
+
+// Export/Import
+const io=document.getElementById("io");
+document.getElementById("exportBtn").addEventListener("click", ()=>{ io.value=JSON.stringify(state); updateStatus("export"); });
+document.getElementById("importBtn").addEventListener("click", ()=>{
+  try{ const obj=JSON.parse(io.value); ["U","D","F","B","R","L"].forEach(f=>{ if(!obj[f]||obj[f].length!==9) throw new Error("Bad face "+f); });
+       state=obj; renderNet(); updateStatus("import ok"); }
+  catch(err){ alert("Import failed: "+err.message); updateStatus("import fail"); }
+});
+
+// Buttons
+document.getElementById("reset").addEventListener("click", ()=>{ state=solvedState(); renderNet(); updateStatus("reset"); });
+document.getElementById("random").addEventListener("click", ()=>{
+  const faces=["U","D","F","B","R","L"];
+  for(const f of faces) for(let i=0;i<9;i++) state[f][i]=faces[Math.floor(Math.random()*6)];
+  for(const f of faces) state[f][4]=f; renderNet(); updateStatus("random");
+});
+document.getElementById("lockCenters").addEventListener("click", ()=>{ centersLocked=true; updateStatus("lock"); });
+document.getElementById("unlockCenters").addEventListener("click", ()=>{ centersLocked=false; updateStatus("unlock"); });
+
+// Legality checker (same logic as before, with visible diagnostics)
+const CORNER_LOCS=[[["U",8],["R",0],["F",2]],[["U",6],["F",0],["L",2]],[["U",0],["L",0],["B",2]],[["U",2],["B",0],["R",2]],[["D",2],["F",8],["R",6]],[["D",0],["L",8],["F",6]],[["D",6],["B",8],["L",6]],[["D",8],["R",8],["B",6]]];
+const CORNER_TYPES=[["U","R","F"],["U","F","L"],["U","L","B"],["U","B","R"],["D","F","R"],["D","L","F"],["D","B","L"],["D","R","B"]];
+const EDGE_LOCS=[[["U",5],["R",1]],[["U",7],["F",1]],[["U",3],["L",1]],[["U",1],["B",1]],[["D",5],["R",7]],[["D",1],["F",7]],[["D",3],["L",7]],[["D",7],["B",7]],[["F",5],["R",3]],[["F",3],["L",5]],[["B",3],["L",3]],[["B",5],["R",5]]];
+const EDGE_TYPES=[["U","R"],["U","F"],["U","L"],["U","B"],["D","R"],["D","F"],["D","L"],["D","B"],["F","R"],["F","L"],["B","L"],["B","R"]];
+function parityOfPermutation(perm){ let visited=new Array(perm.length).fill(false), sum=0;
+  for(let i=0;i<perm.length;i++){ if(visited[i]) continue; let j=i, cycle=0; while(!visited[j]){ visited[j]=true; j=perm[j]; cycle++; } if(cycle>0) sum^=(cycle-1)&1; } return sum; }
+function highlightTile(face,idx){ const grid=document.querySelector(`.grid[data-face='${face}']`); if(!grid) return; const tile=grid.children[idx]; if(tile) tile.classList.add("bad"); }
+function descCornerLoc(i){ return ["URF","UFL","ULB","UBR","DFR","DLF","DBL","DRB"][i]; }
+function descEdgeLoc(i){ return ["UR","UF","UL","UB","DR","DF","DL","DB","FR","FL","BL","BR"][i]; }
+
+function checkLegality(){
+  document.querySelectorAll(".tile").forEach(t=>t.classList.remove("bad"));
+  const msgs=[]; let ok=true;
+  const counts={U:0,D:0,F:0,B:0,R:0,L:0};
+  for(const f of ["U","D","F","B","R","L"]) for(const v of state[f]) counts[v]=(counts[v]||0)+1;
+  for(const f of ["U","D","F","B","R","L"]) if(counts[f]!==9){ ok=false; msgs.push(`Color count issue: ${f}=${counts[f]}`); }
+  for(const f of ["U","D","F","B","R","L"]) if(state[f][4]!==f){ ok=false; msgs.push(`Center mismatch on ${f}`); highlightTile(f,4); }
+
+  const cornerPerm=[], cornerOri=[];
+  for(let loc=0; loc<8; loc++){
+    const triple=CORNER_LOCS[loc].map(([f,i])=>state[f][i]);
+    const set=[...triple].sort().join(""); let typeIdx=-1;
+    for(let t=0;t<8;t++){ if(set === [...CORNER_TYPES[t]].sort().join("")){ typeIdx=t; break; } }
+    if(typeIdx<0){ ok=false; msgs.push(`Invalid corner at ${descCornerLoc(loc)}: ${triple.join(",")}`); CORNER_LOCS[loc].forEach(([f,i])=>highlightTile(f,i)); continue; }
+    cornerPerm.push(typeIdx);
+    const udColor = triple.find(c=>c==="U"||c==="D");
+    const faces = CORNER_LOCS[loc].map(([f,_])=>f);
+    const pos = triple.indexOf(udColor);
+    cornerOri.push(pos);
+  }
+  const sumCornerOri = cornerOri.reduce((a,b)=>a+((b%3)+3)%3,0)%3;
+  if(sumCornerOri!==0){ ok=false; msgs.push(`Corner twist sum ≠ 0 (mod 3) → ${sumCornerOri}`); }
+
+  const edgePerm=[], edgeOri=[];
+  for(let loc=0; loc<12; loc++){
+    const pair=EDGE_LOCS[loc].map(([f,i])=>state[f][i]);
+    const set=[...pair].sort().join(""); let typeIdx=-1;
+    for(let t=0;t<12;t++){ if(set === [...EDGE_TYPES[t]].sort().join("")){ typeIdx=t; break; } }
+    if(typeIdx<0){ ok=false; msgs.push(`Invalid edge at ${descEdgeLoc(loc)}: ${pair.join(",")}`); EDGE_LOCS[loc].forEach(([f,i])=>highlightTile(f,i)); continue; }
+    edgePerm.push(typeIdx);
+    const hasUD = pair.includes("U")||pair.includes("D");
+    let ori=0;
+    if(hasUD){
+      const faces = EDGE_LOCS[loc].map(([f,_])=>f);
+      const idx = pair[0]==="U"||pair[0]==="D" ? 0 : 1;
+      if(!(faces[idx]==="U"||faces[idx]==="D")) ori=1;
+    }else{
+      const faces = EDGE_LOCS[loc].map(([f,_])=>f);
+      const idx = (pair[0]==="F"||pair[0]==="B") ? 0 : 1;
+      if(!(faces[idx]==="F"||faces[idx]==="B")) ori=1;
+    }
+    edgeOri.push(ori);
+  }
+  const sumEdgeOri = edgeOri.reduce((a,b)=>a+(b&1),0)%2;
+  if(sumEdgeOri!==0){ ok=false; msgs.push(`Edge flip sum ≠ 0 (mod 2) → ${sumEdgeOri}`); }
+
+  if(cornerPerm.length===8 && edgePerm.length===12){
+    const cp=parityOfPermutation(cornerPerm), ep=parityOfPermutation(edgePerm);
+    if(cp!==ep){ ok=false; msgs.push(`Permutation parity mismatch: corners=${cp}, edges=${ep}`); }
+  }
+  const status=document.getElementById("status");
+  status.innerHTML = (stamp()+"\n") + (ok? "<span class='ok'>✔ State looks solvable.</span>"
+                                         : "<span class='bad'>Issues detected:</span>\n"+msgs.map(m=>"• "+m).join("\n"));
+  document.getElementById("diag2").textContent = "Check pressed @ "+stamp();
+}
+document.getElementById("check").addEventListener("click", ()=>{ checkLegality(); });
+
+// Self-test fills an impossible state on purpose so you can see red highlights.
+document.getElementById("selfTest").addEventListener("click", ()=>{
+  state = solvedState();
+  // Flip one edge (UF) and twist one corner (URF) to generate errors
+  state.U[7]="R"; state.F[1]="U"; // edge UF flipped
+  state.U[8]="F"; state.R[0]="U"; state.F[2]="R"; // corner URF twisted
+  paintTiles(); renderPreview(); updateStatus("selftest");
+  document.getElementById("diag2").textContent = "Self‑test loaded @ "+stamp()+". Press Check.";
+});
+
+// Status
+function updateStatus(tag){
+  const counts={U:0,D:0,F:0,B:0,R:0,L:0};
+  for(const f of ["U","D","F","B","R","L"]) for(const v of state[f]) counts[v]=(counts[v]||0)+1;
+  const msgs=[];
+  msgs.push(["U","D","F","B","R","L"].every(f=>counts[f]===9) ? "✔ 9 of each color" : "⚠ counts "+JSON.stringify(counts));
+  msgs.push(["U","D","F","B","R","L"].every(f=>state[f][4]===f) ? "✔ centers standard" : "⚠ centers off");
+  const status=document.getElementById("status");
+  status.innerHTML = (stamp()+" ["+(tag||"") + "]\n") + msgs.map(m=> m.startsWith("✔")?("<span class='ok'>"+m+"</span>"):("<span class='warn'>"+m+"</span>")).join("\n");
+  document.getElementById("diag1").textContent = "UI ready @ "+stamp();
+}
 </script>
 </body>
 </html>
