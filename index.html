@@ -1,1 +1,235 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>curt.net</title><style>html,body{height:100%;margin:0}body{display:grid;place-items:center;font:24px system-ui,sans-serif}</style></head><body>curt.net</body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>curt.net</title>
+<style>
+  html, body{
+    height:100%;
+    margin:0;
+    background:#fff;
+    overflow:hidden;
+    overscroll-behavior:none;
+    touch-action:manipulation;
+  }
+  svg{ width:100vw; height:100svh; display:block; }
+</style>
+</head>
+<body>
+
+<svg id="s" viewBox="-2 -2 44 56" preserveAspectRatio="xMidYMid meet" aria-label="40x52 world loop">
+  <defs>
+    <!-- darker, still subtle grid -->
+    <pattern id="grid" width="1" height="1" patternUnits="userSpaceOnUse">
+      <path d="M1 0H0V1"
+            fill="none"
+            stroke="#600"
+            stroke-opacity="0.34"
+            stroke-width="0.35"
+            vector-effect="non-scaling-stroke"/>
+    </pattern>
+
+    <style>
+      /* ONE consistent stroke for everything geometric */
+      .stroke {
+        fill:none;
+        stroke:#111;
+        stroke-opacity:0.78;
+        stroke-width:0.28;
+        vector-effect:non-scaling-stroke; /* keeps screen-consistent thickness */
+        stroke-linecap:round;
+        stroke-linejoin:round;
+      }
+      .border {
+        fill:none;
+        stroke:#000;
+        stroke-opacity:0.20;
+        stroke-width:0.10;
+        vector-effect:non-scaling-stroke;
+      }
+      .origin { fill:#000; fill-opacity:0.28; }
+    </style>
+  </defs>
+
+  <!-- static world -->
+  <rect x="0" y="0" width="40" height="52" fill="url(#grid)"/>
+  <rect class="border" x="0" y="0" width="40" height="52"/>
+  <circle class="origin" cx="20" cy="26" r="0.18"/>
+
+  <!-- rotate geometry only -->
+  <g id="G" transform="rotate(90 20 26)">
+    
+    
+    <text x="44" y="6.9"
+      text-anchor="middle"
+      font-size="0.9"
+      fill="#000"
+      fill-opacity="0.2"
+      font-family="system-ui, sans-serif">
+  curt.net
+</text>
+
+
+    <!-- ===== BUILD (center rings): 0s → ~1.20s ===== -->
+    <!-- r=1 appears immediately -->
+    <circle class="stroke" cx="20" cy="26" r="1"/>
+
+    <!-- r:1→2 (dur 1u = 0.06s) -->
+    <circle class="stroke" cx="20" cy="26" r="1" visibility="hidden">
+      <set attributeName="visibility" to="visible" begin="0.08s"/>
+      <animate attributeName="r" begin="0.08s" dur="0.06s"
+               values="1;2" fill="freeze"
+               calcMode="spline" keySplines="0.42 0 0.58 1"/>
+    </circle>
+
+    <!-- r:2→3 (dur 1u) -->
+    <circle class="stroke" cx="20" cy="26" r="2" visibility="hidden">
+      <set attributeName="visibility" to="visible" begin="0.18s"/>
+      <animate attributeName="r" begin="0.18s" dur="0.06s"
+               values="2;3" fill="freeze"
+               calcMode="spline" keySplines="0.42 0 0.58 1"/>
+    </circle>
+
+    <!-- r:3→5 (dur 2u = 0.12s) -->
+    <circle class="stroke" cx="20" cy="26" r="3" visibility="hidden">
+      <set attributeName="visibility" to="visible" begin="0.28s"/>
+      <animate attributeName="r" begin="0.28s" dur="0.12s"
+               values="3;5" fill="freeze"
+               calcMode="spline" keySplines="0.42 0 0.58 1"/>
+    </circle>
+
+    <!-- r:5→8 (dur 3u = 0.18s) -->
+    <circle class="stroke" cx="20" cy="26" r="5" visibility="hidden">
+      <set attributeName="visibility" to="visible" begin="0.44s"/>
+      <animate attributeName="r" begin="0.44s" dur="0.18s"
+               values="5;8" fill="freeze"
+               calcMode="spline" keySplines="0.42 0 0.58 1"/>
+    </circle>
+
+    <!-- r:8→13 (dur 5u = 0.30s) -->
+    <circle class="stroke" cx="20" cy="26" r="8" visibility="hidden">
+      <set attributeName="visibility" to="visible" begin="0.66s"/>
+      <animate attributeName="r" begin="0.66s" dur="0.30s"
+               values="8;13" fill="freeze"
+               calcMode="spline" keySplines="0.42 0 0.58 1"/>
+    </circle>
+
+    <!-- r:13→21 (dur 8u = 0.48s) -->
+    <circle class="stroke" cx="20" cy="26" r="13" visibility="hidden">
+      <set attributeName="visibility" to="visible" begin="1.00s"/>
+      <animate attributeName="r" begin="1.00s" dur="0.48s"
+               values="13;21" fill="freeze"
+               calcMode="spline" keySplines="0.42 0 0.58 1"/>
+    </circle>
+
+    <!-- ===== VP (neighbors slide out): starts after build ===== -->
+    <!-- start VP at circle 3 (r=3,5,8,13,21) -->
+
+    <!-- VP r3 (dur 2u = 0.12s) -->
+    <g visibility="hidden">
+      <set attributeName="visibility" to="visible" begin="1.60s"/>
+      <circle class="stroke" cx="20" cy="26" r="3">
+        <animate attributeName="cx" begin="1.60s" dur="0.12s"
+                 values="20;17" fill="freeze"
+                 calcMode="spline" keySplines="0.42 0 0.58 1"/>
+      </circle>
+      <circle class="stroke" cx="20" cy="26" r="3">
+        <animate attributeName="cx" begin="1.60s" dur="0.12s"
+                 values="20;23" fill="freeze"
+                 calcMode="spline" keySplines="0.42 0 0.58 1"/>
+      </circle>
+    </g>
+
+    <!-- VP r5 (dur 3u = 0.18s) -->
+    <g visibility="hidden">
+      <set attributeName="visibility" to="visible" begin="1.86s"/>
+      <circle class="stroke" cx="20" cy="26" r="5">
+        <animate attributeName="cx" begin="1.86s" dur="0.18s"
+                 values="20;15" fill="freeze"
+                 calcMode="spline" keySplines="0.42 0 0.58 1"/>
+      </circle>
+      <circle class="stroke" cx="20" cy="26" r="5">
+        <animate attributeName="cx" begin="1.86s" dur="0.18s"
+                 values="20;25" fill="freeze"
+                 calcMode="spline" keySplines="0.42 0 0.58 1"/>
+      </circle>
+    </g>
+
+    <!-- VP r8 (dur 5u = 0.30s) -->
+    <g visibility="hidden">
+      <set attributeName="visibility" to="visible" begin="2.18s"/>
+      <circle class="stroke" cx="20" cy="26" r="8">
+        <animate attributeName="cx" begin="2.18s" dur="0.30s"
+                 values="20;12" fill="freeze"
+                 calcMode="spline" keySplines="0.42 0 0.58 1"/>
+      </circle>
+      <circle class="stroke" cx="20" cy="26" r="8">
+        <animate attributeName="cx" begin="2.18s" dur="0.30s"
+                 values="20;28" fill="freeze"
+                 calcMode="spline" keySplines="0.42 0 0.58 1"/>
+      </circle>
+    </g>
+
+    <!-- VP r13 (dur 8u = 0.48s) -->
+    <g visibility="hidden">
+      <set attributeName="visibility" to="visible" begin="2.60s"/>
+      <circle class="stroke" cx="20" cy="26" r="13">
+        <animate attributeName="cx" begin="2.60s" dur="0.48s"
+                 values="20;7" fill="freeze"
+                 calcMode="spline" keySplines="0.42 0 0.58 1"/>
+      </circle>
+      <circle class="stroke" cx="20" cy="26" r="13">
+        <animate attributeName="cx" begin="2.60s" dur="0.48s"
+                 values="20;33" fill="freeze"
+                 calcMode="spline" keySplines="0.42 0 0.58 1"/>
+      </circle>
+    </g>
+
+    <!-- VP r21 (dur 13u = 0.78s) -->
+    <g visibility="hidden">
+      <set attributeName="visibility" to="visible" begin="3.20s"/>
+      <circle class="stroke" cx="20" cy="26" r="21">
+        <animate attributeName="cx" begin="3.20s" dur="0.78s"
+                 values="20;-1" fill="freeze"
+                 calcMode="spline" keySplines="0.42 0 0.58 1"/>
+      </circle>
+      <circle class="stroke" cx="20" cy="26" r="21">
+        <animate attributeName="cx" begin="3.20s" dur="0.78s"
+                 values="20;41" fill="freeze"
+                 calcMode="spline" keySplines="0.42 0 0.58 1"/>
+      </circle>
+    </g>
+
+    <!-- long end pause, then JS restarts cleanly (no reverse) -->
+  </g>
+</svg>
+
+<script>
+  // Clean restart by cloning the whole SVG (restarts SMIL everywhere).
+  // Click/tap anywhere to reset instantly.
+  (function () {
+    const LOOP_MS = 9000;   // includes a longer pause at end
+    const PAUSE_MS = 3600;  // how long it “rests” at the finished stage
+    const svg = document.getElementById("s");
+    const parent = svg.parentNode;
+
+    function restart() {
+      const fresh = svg.cloneNode(true);
+      parent.replaceChild(fresh, svg);
+      // re-wire click after cloning
+      fresh.addEventListener("pointerdown", () => restart(), { passive:true });
+      window.addEventListener("keydown", (e) => { if (e.key === "r" || e.key === "R") restart(); }, { once:true });
+    }
+
+    svg.addEventListener("pointerdown", () => restart(), { passive:true });
+
+    // Auto loop: wait until the animation is “done”, then pause, then restart.
+    setInterval(() => {
+      setTimeout(restart, PAUSE_MS);
+    }, LOOP_MS);
+  })();
+</script>
+
+</body>
+</html>
